@@ -2,8 +2,6 @@ import { Text, SafeAreaView, StyleSheet, View, Image, TouchableOpacity, Activity
 
 import React, {useState, useEffect} from 'react'; 
 
-// You can import supported modules from npm
-import { Card } from 'react-native-paper';
 
 
 export default function screen02({navigation}) {
@@ -34,20 +32,30 @@ export default function screen02({navigation}) {
       const response = await fetch('https://66fc1f44c3a184a84d1627ea.mockapi.io/bicycledb');
       const data = await response.json();
       setBikes(data);
-      setLoading(false);
-    }catch{
-      setError(error.message);
-      setLoading(false);
+      // setLoading(false);
+    }catch(error){
+      // setError(error.message);
+      // setLoading(false);
     }
   };
 
-    if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
-  }
+  //   if (loading) {
+  //   return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
+  // }
 
-  if (error) {
-    return <Text style={styles.errorText}>Error: {error}</Text>;
-  }
+  // if (error) {
+  //   return <Text style={styles.errorText}>Error: {error}</Text>;
+  // }
+
+  const handleDeleteProduct = async (id) => {
+    try {
+      await fetch(`https://66fc1f44c3a184a84d1627ea.mockapi.io/bicycledb/${id}`, { method: 'DELETE' });
+      const updateBike = bikes.filter(bike => bike.id !== id);
+      setBikes(updateBike);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
     const renderBikes = ({ item }) => (
     <View style={styles.bikeContainer}>
@@ -58,7 +66,7 @@ export default function screen02({navigation}) {
         <TouchableOpacity style={styles.buttonEdit} onPress={() => navigation.navigate('EditProduct', { product: item, fetchProducts: fetchProducts} )}>
           <Text style={styles.buttonText}>EDIT</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonDeletebuttonDelete} onPress={() => handleDeleteProduct(item.id)}> 
+        <TouchableOpacity style={styles.buttonDelete} onPress={() => handleDeleteProduct(item.id)}> 
           <Text style={styles.buttonText}>DELETE</Text>
         </TouchableOpacity>
       </View>
@@ -71,6 +79,9 @@ export default function screen02({navigation}) {
       <Text style = {styles.topViewText}>
         The world's Best Bike
       </Text>
+      <TouchableOpacity style={styles.buttonAdd}> 
+          <Text style={styles.buttonText}>ADD</Text>
+        </TouchableOpacity>
     </View>
     <View style = {styles.menuView}>
       <TouchableOpacity style = {styles.menuItem} onPress = {() => setSelectedCategory('ALL')}>
@@ -93,6 +104,8 @@ export default function screen02({navigation}) {
         data={filterBike()}
         keyExtractor={item => item.id.toString()}
         renderItem={renderBikes}
+        numColumns={2}
+        // horizontal={true}
       />
     </View>
   );
@@ -108,7 +121,7 @@ const styles = StyleSheet.create({
   topView:{
     flex: 0.1,
     alignItems:'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   topViewText:{
     fontWeight: 500,
@@ -151,6 +164,25 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   buttonEdit:{
-    
+    backgroundColor:'yellow',
+    paddingHorizontal:10,
+    paddingVertical:3,
+    borderRadius:5
+  },
+  buttonAdd:{
+    backgroundColor:'green',
+    paddingHorizontal:10,
+    paddingVertical:3,
+    borderRadius:5
+  },
+  buttonDelete:{
+    backgroundColor:'red',
+    paddingHorizontal:10,
+    paddingVertical:3,
+    borderRadius:5
+  },
+  buttonText:{
+    fontWeight: 700,
+
   },
 });
