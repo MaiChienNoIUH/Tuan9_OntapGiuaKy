@@ -1,59 +1,38 @@
-import { Text, SafeAreaView, StyleSheet, View, Image, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { Text, SafeAreaView, StyleSheet, View, Image, TouchableOpacity, ActivityIndicator, FlatList, TextInput } from 'react-native';
 
 import React, {useState, useEffect} from 'react'; 
 
 
 
 export default function screen02({navigation}) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [bikes, setBikes] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
 
-  //Gọi fetchBike khi component được render lần đầu
+  const [filterBikes, setFilterBikes] = useState([]);
+
+  //Gọi fetchBikes khi component được render lần đầu
   useEffect(() => {
-    fetchBike();
+    fetchBikes();
   }, []);
 
-  const filterBike = () =>{
-    if(selectedCategory === "ALL"){
-      return bikes;
-    }
-    else if(selectedCategory === "Roadbike"){
-      return bikes.filter(bike => bike.category === "Roadbike");
-    }
-    else{
-      return bikes.filter(bike => bike.category === "Mountain");
-    }
-  }
-
-  const fetchBike = async () =>{
+  const fetchBikes = async () =>{
     try {
       const response = await fetch('https://66fc1f44c3a184a84d1627ea.mockapi.io/bicycledb');
       const data = await response.json();
       setBikes(data);
-      // setLoading(false);
+      setFilterBikes(data);
     }catch(error){
-      // setError(error.message);
-      // setLoading(false);
+      console.error(error.message);
     }
   };
-
-  //   if (loading) {
-  //   return <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />;
-  // }
-
-  // if (error) {
-  //   return <Text style={styles.errorText}>Error: {error}</Text>;
-  // }
 
   const handleDeleteProduct = async (id) => {
     try {
       await fetch(`https://66fc1f44c3a184a84d1627ea.mockapi.io/bicycledb/${id}`, { method: 'DELETE' });
       const updateBike = bikes.filter(bike => bike.id !== id);
       setBikes(updateBike);
+      setFilterBikes(data);
     } catch (error) {
-      setError(error.message);
+      console.error(error.message);
     }
   };
 
@@ -61,9 +40,9 @@ export default function screen02({navigation}) {
     <View style={styles.bikeContainer}>
       <View style={styles.itemBike}>
         <Image source = {require('../assets/image/Mountain.png')} style = {styles.image} />
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>$ {item.price}</Text>
-        <TouchableOpacity style={styles.buttonEdit} onPress={() => navigation.navigate('EditProduct', { product: item, fetchProducts: fetchProducts} )}>
+        <Text style={styles.bikeName}>{item.name}</Text>
+        <Text style={styles.bikePrice}>$ {item.price}</Text>
+        <TouchableOpacity style={styles.buttonEdit} onPress={() => navigation.navigate('EditBikeScreen', { bike: item, fetchBikes: fetchBikes})}>
           <Text style={styles.buttonText}>EDIT</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonDelete} onPress={() => handleDeleteProduct(item.id)}> 
@@ -79,29 +58,36 @@ export default function screen02({navigation}) {
       <Text style = {styles.topViewText}>
         The world's Best Bike
       </Text>
-      <TouchableOpacity style={styles.buttonAdd}> 
+       <TextInput
+        placeholder="Search products"
+        style={styles.searchInput} 
+        onChangeText={(text) => {
+          setFilterBikes(bikes.filter(bike => bike.name.toLowerCase().includes(text.toLowerCase())));
+        }}
+      />
+      <TouchableOpacity style={styles.buttonAdd} onPress={() => navigation.navigate('AddBikeScreen', {fetchBikes: fetchBikes})}> 
           <Text style={styles.buttonText}>ADD</Text>
         </TouchableOpacity>
     </View>
     <View style = {styles.menuView}>
-      <TouchableOpacity style = {styles.menuItem} onPress = {() => setSelectedCategory('ALL')}>
+      <TouchableOpacity style = {styles.menuItem} onPress = {() => setFilterBikes(bikes)}>
         <Text style = {styles.menuItemText}>
           ALL
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style = {styles.menuItem} onPress = {() => setSelectedCategory('Roadbike')}>
+      <TouchableOpacity style = {styles.menuItem} onPress = {() => setFilterBikes(bikes.filter(p => p.category === 'Roadbike'))}>
         <Text style = {styles.menuItemText}>
           Roadbike
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity style = {styles.menuItem} onPress = {() => setSelectedCategory('Mountain')}>
+      <TouchableOpacity style = {styles.menuItem} onPress = {() => setFilterBikes(bikes.filter(p => p.category === 'Mountain'))}>
         <Text style = {styles.menuItemText}>
           Mountain
         </Text>
       </TouchableOpacity>
     </View>
     <FlatList style = {styles.flatlist}
-        data={filterBike()}
+        data={filterBikes}
         keyExtractor={item => item.id.toString()}
         renderItem={renderBikes}
         numColumns={2}
@@ -119,7 +105,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   topView:{
-    flex: 0.1,
+    flex: 0.2,
     alignItems:'center',
     justifyContent: 'space-between',
   },
@@ -127,6 +113,15 @@ const styles = StyleSheet.create({
     fontWeight: 500,
     color: 'red',
     fontSize: 24,
+  },
+
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+    width: 330
   },
 
   menuView:{
