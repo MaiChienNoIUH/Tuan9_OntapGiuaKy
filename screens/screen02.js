@@ -38,7 +38,7 @@ export default function screen02({navigation}) {
 
     const renderBikes = ({ item }) => (
     <View style={styles.bikeContainer}>
-      <View style={styles.itemBike}>
+      <TouchableOpacity style={styles.itemBike} onPress={() => navigation.navigate('Screen 03', { bike: item })}>
         <Image source = {require('../assets/image/Mountain.png')} style = {styles.image} />
         <Text style={styles.bikeName}>{item.name}</Text>
         <Text style={styles.bikePrice}>$ {item.price}</Text>
@@ -48,7 +48,7 @@ export default function screen02({navigation}) {
         <TouchableOpacity style={styles.buttonDelete} onPress={() => handleDeleteProduct(item.id)}> 
           <Text style={styles.buttonText}>DELETE</Text>
         </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 
